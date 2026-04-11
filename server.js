@@ -47,7 +47,9 @@ app.get('/', (req, res) => {
             games: '/api/games',
             createEvent: 'POST /api/events',
             getEvents: 'GET /api/events',
+            getGames: 'GET /api/games',
             getEventById: 'GET /api/events/:id',
+            getGamesById: 'GET /api/games/:id',
             updateEvent: 'PUT /api/events/:id',
             deleteEvent: 'DELETE /api/events/:id'
         }
@@ -196,6 +198,102 @@ app.get('/api/games/:id', async (req, res) => {
 });
 
 // POST /api/events - Create new event
+app.post('/api/events', async (req, res)=> {
+    try {
+        const { title, description, date, location } = req.body;
+
+        if (!title) {
+            return res.status(400).json({ error: 'Title is required' });
+        }
+        
+        const newEvent = await Event.create({
+            title,
+            description,
+            date,
+            location,
+            userId: req.user.userId
+        });
+
+        res.status(201).json(newEvent);
+
+    } catch (error) {
+        console.error('Error creating event:', error);
+        res.status(500).json({ message: 'Internal server error' });
+    }
+});
+
+// PUT /api/events/:id - Update event by ID
+app.put('/api/events/:id', async (req, res) => {
+    try {
+        const { title, description, date, location } = req.body;
+
+        const event = await Event.findOne({
+            where: {
+                id: req.params.id,
+                userId: req.user.userId
+            }
+        });
+
+        if (!event){
+            return res.status(404).json({ message: 'Event not found' });
+        }
+
+        await event.update({
+            title,
+            description,
+            date,
+            location
+        });
+
+        res.json(event);
+
+    } catch (error) {
+        console.error('Error updating event:', error);
+        res.status(500).json({ message: 'Internal server error' });
+
+    }
+});
+
+// DELETE /api/events/:id - Delete event by ID
+app.delete('/api/events/:id', async (req, res) => {
+    try {
+        const event = await Event.findOne({
+            where: {
+                id: req.params.id,
+                userId: req.user.userId
+            }
+        });
+
+        if (!event) {
+            return res.status(404).json({ message: 'Event not found' });
+        }
+
+        await event.destroy();
+        res.json({ message: 'Event deleted successfully' });
+
+    } catch (error) {
+        console.error('Error deleting event:', error);
+        res.status(500).json({ message: 'Internal server error' });
+
+    }
+});
+
+// Error handling middleware
+app.use((err, req, res, next) => {
+    console.error('Unhandled error:', err);
+    res.status(500).json({
+        error: 'Internal Server Error',
+        message: process.env.NODE_ENV === 'development' ? err.message : 'An unexpected error occurred'
+    });
+});
+
+// 404 handler
+app.use((req, res) => {
+    res.status(404).json({
+        error: 'Endpoint Not Found',
+        message: 'The requested endpoint does not exist'
+    });
+});
 
 // Start server
 app.listen(PORT, () => {
