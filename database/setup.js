@@ -1,0 +1,82 @@
+const { Sequelize, DataTypes } = require('sequelize');
+require('dotenv').config();
+
+// Initialize database connection
+const db = new Sequelize({
+    dialect: 'sqlite',
+    storage: 'database/${process.env.DB_NAME}' || 'events.db',
+    logging: false
+});
+
+// User model
+const User = db.define('User', {
+    id: {
+        type: DataTypes.INTEGER,
+        primaryKey: true,
+        autoIncrement: true
+    },
+    name: {
+            type: DataTypes.STRING,
+            allowNull: false
+    },
+    email: {
+        type: DataTypes.STRING,
+        allowNull: false,
+        unique: true,
+    },
+    password: {
+        type: DataTypes.STRING,
+        allowNull: false
+    }
+});
+
+// Event model
+const Event = db.define('Event', {
+    id: {
+        type: DataTypes.INTEGER,
+        primaryKey: true,
+        autoIncrement: true
+    },
+    title: {
+        type: DataTypes.STRING,
+        allowNull: false
+    },
+    description: {
+        type: DataTypes.TEXT,
+        allowNull: false
+    },
+    date: {
+        type: DataTypes.DATE,
+        allowNull: false
+    },
+    location: {
+        type: DataTypes.STRING,
+        allowNull: false
+    }
+});
+
+// Define relationships
+User.hasMany(Event, { foreignKey: 'userId' });
+Event.belongsTo(User, { foreignKey: 'userId' });
+
+// Initialize database
+async function initializeDatabase() {
+    try {
+        await db.authenticate();
+        console.log('Database connection established successfully.');
+
+        await db.sync();
+        console.log ('Database synchronized successfully.');
+
+    } catch (error) {
+        console.error('Unable to connect to the database:', error);
+    }
+}
+
+initializeDatabase();
+
+module.exports = {
+    db,
+    User,
+    Event
+};
