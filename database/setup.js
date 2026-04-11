@@ -4,7 +4,7 @@ require('dotenv').config();
 // Initialize database connection
 const db = new Sequelize({
     dialect: 'sqlite',
-    storage: 'database/${process.env.DB_NAME}' || 'events.db',
+    storage: process.env.DB_NAME ? `database/${process.env.DB_NAME}` : 'events.db',
     logging: false
 });
 
@@ -84,6 +84,8 @@ const Event = db.define('Event', {
 // Define relationships
 User.hasMany(Event, { foreignKey: 'userId' });
 Event.belongsTo(User, { foreignKey: 'userId' });
+Games.hasMany(Event, { foreignKey: 'gameId' });
+Event.belongsTo(Games, { foreignKey: 'gameId' });
 
 // Initialize database
 async function initializeDatabase() {
@@ -104,5 +106,6 @@ initializeDatabase();
 module.exports = {
     db,
     User,
+    Games,
     Event
 };

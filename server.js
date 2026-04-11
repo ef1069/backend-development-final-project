@@ -1,6 +1,6 @@
 const express = require('express');
 const bcrypt = require('bcryptjs');
-const { db, User, Event } = require('./database/setup');
+const { db, User, Games, Event } = require('./database/setup');
 const cors = require('cors');
 require('dotenv').config();
 
@@ -9,6 +9,13 @@ const PORT = process.env.PORT || 3000;
 
 app.use(express.json());
 app.use(cors());
+
+// MOCK USER MIDDLEWARE FOR DEVELOPMENT ONLY
+// Remove this when real authentication is implemented
+app.use((req, res, next) => {
+    req.user = { userId: 1 };
+    next();
+});
 
 // Insert JWT authentication middleware here
 
@@ -41,8 +48,8 @@ app.get('/', (req, res) => {
         version: '1.0.0',
         endpoints: {
             health: '/health',
-            register: 'POST /api/auth/register',
-            login: 'POST /api/auth/login',
+            register: 'POST /api/register',
+            login: 'POST /api/login',
             events: '/api/events',
             games: '/api/games',
             createEvent: 'POST /api/events',
@@ -57,7 +64,9 @@ app.get('/', (req, res) => {
 });
 
 // Routes - Add authentication later
-app.post('/api/auth/register', async (req, res) => {
+
+// POST /api/register - User registration
+app.post('/api/register', async (req, res) => {
     try {
         const { name, email, password } = req.body;
 
@@ -87,8 +96,8 @@ app.post('/api/auth/register', async (req, res) => {
     }
 });
 
-// POST /api/auth/login - User login
-app.post('/api/auth/login', async (req, res) => {
+// POST /api/login - User login
+app.post('/api/login', async (req, res) => {
     try {
         const { email, password } = req.body;
 

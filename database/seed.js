@@ -12,17 +12,17 @@ async function seedDatabase() {
             {
                 name : 'John Doe',
                 email: 'john@example.com',
-                password: hashedPassword
+                password: 'password123'
             },
             {
                 name : 'Jane Smith',
                 email: 'jane@example.com',
-                password: hashedPassword
+                password: 'password123'
             },
             {
                 name : 'Mike Johnson',
                 email : 'mike@example.com',
-                password: hashedPassword
+                password: 'password123'
             }
         ]);
 
@@ -31,43 +31,43 @@ async function seedDatabase() {
                 name: 'Poker',
                 type: 'Card Game',
                 difficulty: 'Medium',
-                players: 3-8
+                players: '3-8'
             },
             {
                 name: 'Chess',
                 type: 'Board Game',
                 difficulty: 'Hard',
-                players: 2
+                players: '2'
             },
             {
                 name: 'Trivia',
                 type: 'Quiz Game',
                 difficulty: 'Easy',
-                players: 2-8
+                players: '2-8'
             },
             {
                 name: 'Monopoly',
                 type: 'Board Game',
                 difficulty: 'Medium',
-                players: 3-8
+                players: '3-8'
             },
             {
                 name: 'Catan',
                 type: 'Board Game',
                 difficulty: 'Medium',
-                players: 3-4
+                players: '3-4'
             },
             {
-                name: 'Fornite',
+                name: 'Fortnite',
                 type: 'Video Game',
                 difficulty: 'Medium',
-                players: 1-4
+                players: '1-4'
             },
             {
                 name: 'Rocket League',
                 type: 'Video Game',
                 difficulty: 'Medium',
-                players: 1-3
+                players: '1-3'
             }
         ]);
 
