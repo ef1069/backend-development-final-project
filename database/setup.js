@@ -30,6 +30,32 @@ const User = db.define('User', {
     }
 });
 
+// Games model
+const Games = db.define('Games', {
+    id: {
+        type: DataTypes.INTEGER,
+        primaryKey: true,
+        autoIncrement: true
+    },
+    name: {
+        type: DataTypes.STRING,
+        allowNull: false
+    },
+    type: {
+        type: DataTypes.STRING,
+        allowNull: false
+    },
+    difficulty: {
+        type: DataTypes.STRING,
+        allowNull: false
+    },
+    players: {
+        type: DataTypes.STRING,
+        allowNull: false
+    }
+});
+
+
 // Event model
 const Event = db.define('Event', {
     id: {

@@ -1,5 +1,5 @@
 const bcrypt = require('bcryptjs');
-const { db, User, Event } = require('./setup');
+const { db, User, Games, Event } = require('./setup');
 
 async function seedDatabase() {
     try {
@@ -26,6 +26,51 @@ async function seedDatabase() {
             }
         ]);
 
+        await Games.bulkCreate([
+            { 
+                name: 'Poker',
+                type: 'Card Game',
+                difficulty: 'Medium',
+                players: 3-8
+            },
+            {
+                name: 'Chess',
+                type: 'Board Game',
+                difficulty: 'Hard',
+                players: 2
+            },
+            {
+                name: 'Trivia',
+                type: 'Quiz Game',
+                difficulty: 'Easy',
+                players: 2-8
+            },
+            {
+                name: 'Monopoly',
+                type: 'Board Game',
+                difficulty: 'Medium',
+                players: 3-8
+            },
+            {
+                name: 'Catan',
+                type: 'Board Game',
+                difficulty: 'Medium',
+                players: 3-4
+            },
+            {
+                name: 'Fornite',
+                type: 'Video Game',
+                difficulty: 'Medium',
+                players: 1-4
+            },
+            {
+                name: 'Rocket League',
+                type: 'Video Game',
+                difficulty: 'Medium',
+                players: 1-3
+            }
+        ]);
+
         await Event.bulkCreate([
             {
                 title: 'Poker Night',
@@ -47,6 +92,13 @@ async function seedDatabase() {
                 date: new Date('2026-09-10'),
                 location: '789 Oak St, Anytown',
                 userId: users[2].id
+            },
+            {
+                title: 'Video Game Tournament',
+                description: 'Compete in our video game tournament for a chance to win prizes!',
+                date: new Date('2026-10-05'),
+                location: '321 Pine St, Anytown',
+                userId: users[0].id
             }
          ]);
          
