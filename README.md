@@ -15,7 +15,7 @@ A REST API for managing game nights and other events, built with Node.js, Expres
 
 ### Events
 - GET /api/events - Show all events
-- POST /api/events - Create and event
+- POST /api/events - Create an event
 - GET /api/events/:id - Get a single event
 - PUT /api/events/:id - Update event
 
