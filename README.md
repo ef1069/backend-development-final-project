@@ -47,3 +47,51 @@ If you run the seed screen to fill with example data, this is the user informati
 - **john@example.com / password123
 - **jane@example.com / password123
 - **mike@example.com / password123
+
+### Testing
+Use the following sample requests to test the API:
+
+**Register a user:**
+
+POST /api/register
+Content-Type: application/json
+
+{
+    "name": "John Doe",
+    "email": "john@example.com",
+    "password": "password123"
+}
+
+**Login:**
+
+POST /api/login
+Content-Type: application/json
+
+{
+    "email": "john@example.com",
+    "password": "password123"
+}
+
+**Create an event**
+
+POST /api/events
+Content-Type: application/json
+
+{
+    "title": "Game Night",
+    "description": "game night information",
+    "date":2026,
+    "location": "address"
+}
+
+
+### Database
+This API uses SQLite, events.db will be created automatically after running the necessary local development code. 
+
+### Environment Variables
+-'NODE_ENV' - Environment
+-'PORT' - Server port (3000)
+-'DB_NAME' - Database file name
+
+### Deployment
+Final deployment still in development, not yet ready for cloud for security reasons.
