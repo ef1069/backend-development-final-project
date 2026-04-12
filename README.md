@@ -15,7 +15,7 @@ A REST API for managing game nights and other events, built with Node.js, Expres
 
 ### Events
 - GET /api/events - Show all events
-- POST /api/events - Create and event
+- POST /api/events - Create an event
 - GET /api/events/:id - Get a single event
 - PUT /api/events/:id - Update event
 
@@ -28,18 +28,13 @@ A REST API for managing game nights and other events, built with Node.js, Expres
 - GET / - General API information
 
 ## Local Development
-1. Install dependencies: 
-'''bash 
-npm install
-'''
+
+1. Install dependencies:
+   npm install
 2. Seed the database with sample data:
-'''bash
-npm run seed
-'''
+   npm run seed
 3. Start the server:
-'''bash
-npm run start
-'''
+   npm run start
 4. API will be available at 'http://localhost:3000'
 
 ### Sample users
