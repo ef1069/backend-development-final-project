@@ -28,3 +28,22 @@ A REST API for managing game nights and other events, built with Node.js, Expres
 - GET / - General API information
 
 ## Local Development
+1. Install dependencies: 
+'''bash 
+npm install
+'''
+2. Seed the database with sample data:
+'''bash
+npm run seed
+'''
+3. Start the server:
+'''bash
+npm run start
+'''
+4. API will be available at 'http://localhost:3000'
+
+### Sample users
+If you run the seed screen to fill with example data, this is the user information: 
+- **john@example.com / password123
+- **jane@example.com / password123
+- **mike@example.com / password123

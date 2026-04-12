@@ -6,8 +6,6 @@ async function seedDatabase() {
         await db.sync({ force: true });
         console.log('Database reset successfully.');
 
-        const hashedPassword = await bcrypt.hash('password123', 10);
-
         const users = await User.bulkCreate([
             {
                 name : 'John Doe',
