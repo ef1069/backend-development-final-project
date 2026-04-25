@@ -1,5 +1,6 @@
 const express = require('express');
 const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
 const { db, User, Games, Event } = require('./database/setup');
 const cors = require('cors');
 require('dotenv').config();
@@ -7,17 +8,54 @@ require('dotenv').config();
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+// Middleware
 app.use(express.json());
 app.use(cors());
 
-// MOCK USER MIDDLEWARE FOR DEVELOPMENT ONLY
-// Remove this when real authentication is implemented
-app.use((req, res, next) => {
-    req.user = { userId: 1 };
-    next();
-});
+// JWT Authentication
+function requireAuth(req, res, next) {
+    const authHeader = req.headers.authorization
 
-// Insert JWT authentication middleware here
+    if(!authHeader || !authHeader.startsWith('Bearer ')) {
+        return res.status(401).json({
+            error: 'Access denied. No token provided'
+        });
+    }
+
+    const token = authHeader.substring(7);
+
+    try{
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        req.user = decoded;
+        next();
+    } catch (error){
+        if (error.name === 'TokenExpiredError'){
+            return res.status(401).json({
+                error: 'Token expired. Please log in again'
+            });
+        } else if (error.name === 'JsonWebTokenError'){
+            return res.status(401).json({
+                error: 'Invalid token. Please log in again.'
+            });
+        } else {
+            return res.status(401).json({
+                error: 'Token verification failed'
+            });
+        }
+    }
+}
+
+// Role-based authorization
+function requireRole(role) {
+    return (req, res, next) => {
+        if (!req.user || req.user.role !== role) {
+            return res.status(403).json({
+                error: 'Access denied. Insufficient permissions'
+            });
+        }
+        next();
+    };
+}
 
 // Test databse connection
 async function testConnection() {
@@ -68,18 +106,19 @@ app.get('/', (req, res) => {
 // POST /api/register - User registration
 app.post('/api/register', async (req, res) => {
     try {
-        const { name, email, password } = req.body;
+        const { name, email, password, role } = req.body;
 
         if (!name || !email || !password) {
             return res.status(400).json({ message: 'Name, email, and password are required' });
-    }
+        }
 
-    const hashedPassword = await bcrypt.hash(password, 10);
+        const hashedPassword = await bcrypt.hash(password, 10);
 
         const newUser = await User.create({
             name,
             email,
-            password: hashedPassword
+            password: hashedPassword,
+            role: role || 'participant'
         });
 
         res.status(201).json({ 
@@ -87,7 +126,8 @@ app.post('/api/register', async (req, res) => {
             user: {
                 userId: newUser.id,
                 name: newUser.name,
-                email: newUser.email
+                email: newUser.email,
+                role: newUser.role
             }
         });
     } catch (error) {
@@ -104,32 +144,38 @@ app.post('/api/login', async (req, res) => {
         if (!email || !password) {
             return res.status(400).json({ message: 'Email and password are required' });
         }
+
         const user = await User.findOne({ where: { email } });
 
         if (!user) {
             return res.status(401).json({ message: 'Invalid email or password' });
         }
-
-        let isPasswordValid = false;
-        try {
-            isPasswordValid = await bcrypt.compare(password, user.password);
-        } catch (err) {
-            // Ignore error, fallback to plaintext check
-        }
-        // If bcrypt fails (e.g., plaintext in DB), fallback to direct comparison
-        if (!isPasswordValid) {
-            isPasswordValid = password === user.password;
-        }
-        if (!isPasswordValid) {
-            return res.status(401).json({ message: 'Invalid email or password' });
+        
+        const isValidPassword = await bcrypt.compare(password,user.password);
+        if(!isValidPassword){
+            return res.status(401).json({
+                error:'Invalid email or password'
+            });
         }
 
+        const token = jwt.sign({
+            id: user.id,
+            name: user.name,
+            email: user.email,
+            role: user.role
+        },
+        process.env.JWT_SECRET,
+        {expiresIn: process.env.JWT_EXPIRES_IN}
+    );
+     
         res.json({
             message: 'Login successful',
+            token: token,
             user: {
                 userId: user.id,
                 name: user.name,
-                email: user.email
+                email: user.email,
+                role: user.role
             }
         });
 
@@ -140,11 +186,9 @@ app.post('/api/login', async (req, res) => {
 });
 
 // GET /api/events - Get all events
-app.get('/api/events', async (req, res) => {
+app.get('/api/events', requireAuth, async (req, res) => {
     try {
-        const events = await Event.findAll({
-            where: { userId: req.user.userId }
-        });
+        const events = await Event.findAll();
         res.json({
             message: 'Events retrieved successfully',
             events: events,
@@ -158,12 +202,11 @@ app.get('/api/events', async (req, res) => {
 });
 
 // GET /api/events/:id - Get event by ID
-app.get('/api/events/:id', async (req, res) => {
+app.get('/api/events/:id', requireAuth, async (req, res) => {
     try {
         const event = await Event.findOne({
             where: {
-                id: req.params.id,
-                userId: req.user.userId
+                id: req.params.id
             }
         });
 
@@ -180,7 +223,7 @@ app.get('/api/events/:id', async (req, res) => {
 });
 
 // GET /api/games - Get all games
-app.get('/api/games', async (req, res) => {
+app.get('/api/games', requireAuth, async (req, res) => {
     try {
         const games = await Games.findAll();
         res.json({
@@ -196,7 +239,7 @@ app.get('/api/games', async (req, res) => {
 });
 
 // GET /api/games/:id - Get game by ID
-app.get('/api/games/:id', async (req, res) => {
+app.get('/api/games/:id', requireAuth, async (req, res) => {
     try {
         const game = await Games.findOne({
             where: {
@@ -217,7 +260,7 @@ app.get('/api/games/:id', async (req, res) => {
 });
 
 // POST /api/events - Create new event
-app.post('/api/events', async (req, res)=> {
+app.post('/api/events', requireAuth, requireRole('admin'), async (req, res)=> {
     try {
         const { title, description, date, location } = req.body;
 
@@ -230,7 +273,7 @@ app.post('/api/events', async (req, res)=> {
             description,
             date,
             location,
-            userId: req.user.userId
+            userId: req.user.id
         });
 
         res.status(201).json(newEvent);
@@ -242,14 +285,13 @@ app.post('/api/events', async (req, res)=> {
 });
 
 // PUT /api/events/:id - Update event by ID
-app.put('/api/events/:id', async (req, res) => {
+app.put('/api/events/:id', requireAuth, requireRole('admin'), async (req, res) => {
     try {
         const { title, description, date, location } = req.body;
 
         const event = await Event.findOne({
             where: {
-                id: req.params.id,
-                userId: req.user.userId
+                id: req.params.id
             }
         });
 
@@ -274,12 +316,11 @@ app.put('/api/events/:id', async (req, res) => {
 });
 
 // DELETE /api/events/:id - Delete event by ID
-app.delete('/api/events/:id', async (req, res) => {
+app.delete('/api/events/:id', requireAuth, requireRole('admin'), async (req, res) => {
     try {
         const event = await Event.findOne({
             where: {
-                id: req.params.id,
-                userId: req.user.userId
+                id: req.params.id
             }
         });
 
@@ -294,6 +335,65 @@ app.delete('/api/events/:id', async (req, res) => {
         console.error('Error deleting event:', error);
         res.status(500).json({ message: 'Internal server error' });
 
+    }
+});
+
+// POST /api/events/:id/join - Join an event
+app.post('/api/events/:id/join', requireAuth, requireRole('participant'), async (req, res) => {
+    try {
+        const event = await Event.findOne({
+            where: {
+                id: req.params.id
+            }
+        });
+
+        if (!event) {
+            return res.status(404).json({ message: 'Event not found' });
+        }
+
+        const participants = JSON.parse(event.participants || '[]');
+        if (participants.includes(req.user.id)) {
+            return res.status(400).json({ message: 'Already joined this event' });
+        }
+
+        participants.push(req.user.id);
+        await event.update({ participants: JSON.stringify(participants) });
+
+        res.json({ message: 'Successfully joined the event' });
+
+    } catch (error) {
+        console.error('Error joining event:', error);
+        res.status(500).json({ message: 'Internal server error' });
+    }
+});
+
+// DELETE /api/events/:id/join - Leave an event
+app.delete('/api/events/:id/join', requireAuth, requireRole('participant'), async (req, res) => {
+    try {
+        const event = await Event.findOne({
+            where: {
+                id: req.params.id
+            }
+        });
+
+        if (!event) {
+            return res.status(404).json({ message: 'Event not found' });
+        }
+
+        const participants = JSON.parse(event.participants || '[]');
+        const index = participants.indexOf(req.user.id);
+        if (index === -1) {
+            return res.status(400).json({ message: 'Not joined this event' });
+        }
+
+        participants.splice(index, 1);
+        await event.update({ participants: JSON.stringify(participants) });
+
+        res.json({ message: 'Successfully left the event' });
+
+    } catch (error) {
+        console.error('Error leaving event:', error);
+        res.status(500).json({ message: 'Internal server error' });
     }
 });
 

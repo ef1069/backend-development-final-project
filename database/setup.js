@@ -27,6 +27,11 @@ const User = db.define('User', {
     password: {
         type: DataTypes.STRING,
         allowNull: false
+    },
+    role: {
+        type: DataTypes.ENUM('admin', 'participant'),
+        allowNull: false,
+        defaultValue: 'participant'
     }
 });
 
@@ -78,6 +83,11 @@ const Event = db.define('Event', {
     location: {
         type: DataTypes.STRING,
         allowNull: false
+    },
+    participants: {
+        type: DataTypes.TEXT,
+        allowNull: false,
+        defaultValue: '[]'
     }
 });
 
