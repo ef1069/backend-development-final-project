@@ -88,6 +88,7 @@ app.get('/', (req, res) => {
             health: '/health',
             register: 'POST /api/register',
             login: 'POST /api/login',
+            logout: 'POST /api/logout',
             events: '/api/events',
             games: '/api/games',
             createEvent: 'POST /api/events',
@@ -106,7 +107,7 @@ app.get('/', (req, res) => {
 // POST /api/register - User registration
 app.post('/api/register', async (req, res) => {
     try {
-        const { name, email, password, role } = req.body;
+        const { name, email, password } = req.body;
 
         if (!name || !email || !password) {
             return res.status(400).json({ message: 'Name, email, and password are required' });
@@ -118,7 +119,7 @@ app.post('/api/register', async (req, res) => {
             name,
             email,
             password: hashedPassword,
-            role: role || 'participant'
+            role: 'participant'
         });
 
         res.status(201).json({ 
@@ -183,6 +184,14 @@ app.post('/api/login', async (req, res) => {
         console.error('Error logging in:', error);
         res.status(500).json({ message: 'Internal server error' });
     }
+});
+
+// POST /api/logout - User logout
+app.post('/api/logout', requireAuth, (req, res) => {
+    res.json({ 
+        message: 'Logged out successfully',
+        timestamp: new Date().toISOString()
+    });
 });
 
 // GET /api/events - Get all events
@@ -285,7 +294,7 @@ app.post('/api/events', requireAuth, requireRole('admin'), async (req, res)=> {
 });
 
 // PUT /api/events/:id - Update event by ID
-app.put('/api/events/:id', requireAuth, requireRole('admin'), async (req, res) => {
+app.put('/api/events/:id', requireAuth, async (req, res) => {
     try {
         const { title, description, date, location } = req.body;
 
@@ -297,6 +306,13 @@ app.put('/api/events/:id', requireAuth, requireRole('admin'), async (req, res) =
 
         if (!event){
             return res.status(404).json({ message: 'Event not found' });
+        }
+
+        // Check ownership or admin role
+        if (event.userId !== req.user.id && req.user.role !== 'admin') {
+            return res.status(403).json({ 
+                error: 'Access denied. You can only modify your own events' 
+            });
         }
 
         await event.update({
@@ -316,7 +332,7 @@ app.put('/api/events/:id', requireAuth, requireRole('admin'), async (req, res) =
 });
 
 // DELETE /api/events/:id - Delete event by ID
-app.delete('/api/events/:id', requireAuth, requireRole('admin'), async (req, res) => {
+app.delete('/api/events/:id', requireAuth, async (req, res) => {
     try {
         const event = await Event.findOne({
             where: {
@@ -326,6 +342,13 @@ app.delete('/api/events/:id', requireAuth, requireRole('admin'), async (req, res
 
         if (!event) {
             return res.status(404).json({ message: 'Event not found' });
+        }
+
+        // Check ownership or admin role
+        if (event.userId !== req.user.id && req.user.role !== 'admin') {
+            return res.status(403).json({ 
+                error: 'Access denied. You can only delete your own events' 
+            });
         }
 
         await event.destroy();
@@ -339,7 +362,7 @@ app.delete('/api/events/:id', requireAuth, requireRole('admin'), async (req, res
 });
 
 // POST /api/events/:id/join - Join an event
-app.post('/api/events/:id/join', requireAuth, requireRole('participant'), async (req, res) => {
+app.post('/api/events/:id/join', requireAuth, async (req, res) => {
     try {
         const event = await Event.findOne({
             where: {
@@ -368,7 +391,7 @@ app.post('/api/events/:id/join', requireAuth, requireRole('participant'), async 
 });
 
 // DELETE /api/events/:id/join - Leave an event
-app.delete('/api/events/:id/join', requireAuth, requireRole('participant'), async (req, res) => {
+app.delete('/api/events/:id/join', requireAuth, async (req, res) => {
     try {
         const event = await Event.findOne({
             where: {
