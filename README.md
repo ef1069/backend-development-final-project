@@ -2,7 +2,7 @@
 A REST API for managing game nights and other events, built with Node.js, Express, and SQLite
 
 ## Features
-- User registration (authentication in development)
+- User registration
 - CRUD endpoints
 - Event planning and organization
 - SQLite database and Sequelize ORM
@@ -12,12 +12,14 @@ A REST API for managing game nights and other events, built with Node.js, Expres
 ### Authentication
 - POST /api/register - Register a new user
 - POST /api/login - Login user
+- POST /api/logout - Logout user
 
 ### Events
 - GET /api/events - Show all events
 - POST /api/events - Create an event
 - GET /api/events/:id - Get a single event
 - PUT /api/events/:id - Update event
+- DELETE /api/events/:id - Delete event
 
 ### Games
 - GET /api/games - Show all games
@@ -38,10 +40,11 @@ A REST API for managing game nights and other events, built with Node.js, Expres
 4. API will be available at 'http://localhost:3000'
 
 ### Sample users
-If you run the seed screen to fill with example data, this is the user information: 
-- **john@example.com / password123
-- **jane@example.com / password123
-- **mike@example.com / password123
+If you run the seed script to fill with example data, this is the user information: 
+- **admin@example.com / password123** (admin)
+- **john@example.com / password123**
+- **jane@example.com / password123**
+- **mike@example.com / password123**
 
 ### Testing
 Use the following sample requests to test the API:
@@ -75,7 +78,7 @@ Content-Type: application/json
 {
     "title": "Game Night",
     "description": "game night information",
-    "date":2026,
+    "date": 2026,
     "location": "address"
 }
 
@@ -89,4 +92,4 @@ This API uses SQLite, events.db will be created automatically after running the 
 -'DB_NAME' - Database file name
 
 ### Deployment
-Final deployment still in development, not yet ready for cloud for security reasons.
+The API is ready to deploy to cloud platforms

@@ -13,7 +13,7 @@ app.use(express.json());
 app.use(cors());
 
 // JWT Authentication
-function requireAuth(req, res, next) {
+async function requireAuth(req, res, next) {
     const authHeader = req.headers.authorization
 
     if(!authHeader || !authHeader.startsWith('Bearer ')) {
@@ -26,7 +26,20 @@ function requireAuth(req, res, next) {
 
     try{
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
-        req.user = decoded;
+        const user = await User.findByPk(decoded.id);
+
+        if (!user) {
+            return res.status(401).json({
+                error: 'Invalid token. User not found'
+            });
+        }
+
+        req.user = {
+            id: user.id,
+            name: user.name,
+            email: user.email,
+            role: user.role
+        };
         next();
     } catch (error){
         if (error.name === 'TokenExpiredError'){
@@ -73,7 +86,7 @@ testConnection();
 app.get('/health', (req, res) => {
     res.json({
         status: 'OK',
-        message: 'Task API is running',
+        message: 'Event API is running',
         environment: process.env.NODE_ENV || 'development',
         timestamp: new Date().toISOString()
     });
@@ -82,7 +95,7 @@ app.get('/health', (req, res) => {
 // Root endpoint
 app.get('/', (req, res) => {
     res.json({
-        message: 'Welcome to the Task API',
+        message: 'Welcome to the Event API',
         version: '1.0.0',
         endpoints: {
             health: '/health',
@@ -309,7 +322,7 @@ app.put('/api/events/:id', requireAuth, async (req, res) => {
         }
 
         // Check ownership or admin role
-        if (event.userId !== req.user.id && req.user.role !== 'admin') {
+        if (event.userId !== Number(req.user.id) && req.user.role !== 'admin') {
             return res.status(403).json({ 
                 error: 'Access denied. You can only modify your own events' 
             });
@@ -345,7 +358,7 @@ app.delete('/api/events/:id', requireAuth, async (req, res) => {
         }
 
         // Check ownership or admin role
-        if (event.userId !== req.user.id && req.user.role !== 'admin') {
+        if (event.userId !== Number(req.user.id) && req.user.role !== 'admin') {
             return res.status(403).json({ 
                 error: 'Access denied. You can only delete your own events' 
             });
