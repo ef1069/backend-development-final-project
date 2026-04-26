@@ -2,7 +2,7 @@
 A REST API for managing game nights and other events, built with Node.js, Express, and SQLite
 
 ## Features
-- User registration
+- User registration, authentication, and authorization with JWT
 - CRUD endpoints
 - Event planning and organization
 - SQLite database and Sequelize ORM
