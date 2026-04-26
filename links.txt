@@ -2,3 +2,4 @@ Postman Documentation:
 https://documenter.getpostman.com/view/52414209/2sBXitD7d6
 
 Render Deployment:
+https://event-management-api-d73j.onrender.com/ 
