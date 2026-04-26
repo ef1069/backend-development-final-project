@@ -44,7 +44,7 @@ If you run the seed script to fill with example data, this is the user informati
 - **admin@example.com / password123** (admin)
 - **john@example.com / password123**
 - **jane@example.com / password123**
-- **mike@example.com / password123**
+- **mike@example.com / password123** (host)
 
 ### Testing
 Use the following sample requests to test the API:

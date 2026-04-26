@@ -29,7 +29,7 @@ const User = db.define('User', {
         allowNull: false
     },
     role: {
-        type: DataTypes.ENUM('admin', 'participant'),
+        type: DataTypes.ENUM('admin', 'participant', 'host'),
         allowNull: false,
         defaultValue: 'participant'
     }

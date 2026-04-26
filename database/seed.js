@@ -32,7 +32,7 @@ async function seedDatabase() {
                 name: 'Mike Johnson',
                 email: 'mike@example.com',
                 password: hashedPassword,
-                role: 'participant'
+                role: 'host'
             }
         ]);
 

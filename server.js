@@ -60,8 +60,9 @@ async function requireAuth(req, res, next) {
 
 // Role-based authorization
 function requireRole(role) {
+    const allowedRoles = Array.isArray(role) ? role : [role];
     return (req, res, next) => {
-        if (!req.user || req.user.role !== role) {
+        if (!req.user || !allowedRoles.includes(req.user.role)) {
             return res.status(403).json({
                 error: 'Access denied. Insufficient permissions'
             });
@@ -70,7 +71,7 @@ function requireRole(role) {
     };
 }
 
-// Test databse connection
+// Test database connection
 async function testConnection() {
     try {
         await db.authenticate();
@@ -282,7 +283,7 @@ app.get('/api/games/:id', requireAuth, async (req, res) => {
 });
 
 // POST /api/events - Create new event
-app.post('/api/events', requireAuth, requireRole('admin'), async (req, res)=> {
+app.post('/api/events', requireAuth, requireRole(['admin', 'host']), async (req, res)=> {
     try {
         const { title, description, date, location } = req.body;
 
