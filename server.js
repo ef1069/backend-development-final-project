@@ -1,4 +1,5 @@
 const express = require('express');
+const path = require('path');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const { db, User, Games, Event } = require('./database/setup');
@@ -11,6 +12,8 @@ const PORT = process.env.PORT || 3000;
 // Middleware
 app.use(express.json());
 app.use(cors());
+// Serve static frontend files from the "public" directory
+app.use(express.static(path.join(__dirname, 'public')));
 
 // JWT Authentication
 async function requireAuth(req, res, next) {
@@ -432,6 +435,12 @@ app.delete('/api/events/:id/join', requireAuth, async (req, res) => {
         console.error('Error leaving event:', error);
         res.status(500).json({ message: 'Internal server error' });
     }
+});
+
+// Serve frontend for non-API routes (SPA fallback)
+app.use((req, res, next) => {
+    if (req.path.startsWith('/api') || req.path.startsWith('/health')) return next();
+    res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
 // Error handling middleware

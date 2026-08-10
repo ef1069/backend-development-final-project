@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Event App</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="app.js" defer></script>
+</head>
+<body>
+  <header>
+    <h1>Event Management</h1>
+    <div>
+      <span id="userName"></span> 
+      <button id="logoutBtn" style="display:none">Logout</button>
+    </div>
+  </header>
+
+  <section id="auth">
+    <h2>Login</h2>
+    <form id="loginForm">
+      <input id="email" type="email" placeholder="Email" required />
+      <input id="password" type="password" placeholder="Password" required />
+      <button type="submit">Login</button>
+    </form>
+  </section>
+
+  <section>
+    <h2>Events</h2>
+    <button id="fetchEvents">Load Events</button>
+    <div id="events"></div>
+  </section>
+
+  <script src="/app.js"></script>
+</body>
+</html>
