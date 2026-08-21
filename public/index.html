@@ -11,13 +11,13 @@
   <header>
     <h1>Event Management</h1>
     <div>
-      <span id="userName"></span> 
+      <span id="username"></span> 
       <button id="logoutBtn" style="display:none">Logout</button>
     </div>
   </header>
 
   <section id="auth">
-    <h2>Login</h2>
+    <h2 id="loginHeader">Login</h2>
     <form id="loginForm">
       <input id="email" type="email" placeholder="Email" required />
       <input id="password" type="password" placeholder="Password" required />
@@ -31,6 +31,23 @@
     <div id="events"></div>
   </section>
 
-  <script src="/app.js"></script>
+  <section>
+    <h2>Create Event</h2>
+    <form id="createEventForm" method="POST">
+      <input id="eventName" type="name" placeholder="Event Name" required/>
+      <input id="eventDescription" type="paragraph" placeholder="Event Description" required/>
+      <input id="eventDate" type="date" placeholder="Event Date" required/>
+      <input id="eventLocation" type="text" placeholder="Event Location" required/>
+      <button type="submit">Create</button>
+    </form>
+  </section>
+
+  <section>
+    <form>
+      <h2>Delete Event</h2>
+        <input id="deleteEventId" type="text" placeholder="Event ID" required/>
+        <button id="deleteEventBtn" type="submit">Delete</button>
+    </form>
+  </section>
 </body>
 </html>
