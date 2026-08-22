@@ -22,6 +22,7 @@ function getToken(){
   return localStorage.getItem('token');
 } 
 
+// Function to handle login
 async function login(email, password){
   const res = await fetch('/api/login', {
     method: 'POST',
@@ -33,6 +34,7 @@ async function login(email, password){
   return res.json();
 }
 
+// Function to search events
 async function searchEvents(searchTerm = ''){
   const token = getToken();
   const query = searchTerm ? `?q=${encodeURIComponent(searchTerm)}` : '';
@@ -46,6 +48,7 @@ async function searchEvents(searchTerm = ''){
   return res.json();
 }
 
+// Login form
 document.getElementById('loginForm').addEventListener('submit', async (e)=>{
   e.preventDefault();
   const email = document.getElementById('email').value;
@@ -60,6 +63,7 @@ document.getElementById('loginForm').addEventListener('submit', async (e)=>{
   }
 });
 
+// Render events
 async function renderEvents(searchTerm = ''){
   const eventsEl = document.getElementById('events');
   eventsEl.innerHTML = 'Loading...';
@@ -70,7 +74,7 @@ async function renderEvents(searchTerm = ''){
       eventsEl.textContent = 'No events found.';
       return;
     }
-    (data.events || []).forEach(ev=>{
+    data.events.forEach(ev=>{
       const div = document.createElement('div');
       div.className = 'card event-card';
       div.innerHTML = `
@@ -78,8 +82,10 @@ async function renderEvents(searchTerm = ''){
           <strong class="event-title">${ev.title}</strong>
           <small class="event-meta">ID: ${ev.id}</small>
           <small class="event-meta">${ev.date || ''}${ev.location ? ' @ ' + ev.location : ''}</small>
+          <small class="players-meta">Players: ${ev.players ? ev.players.length : 0}/${ev.maxPlayers || 'unlimited'}</small>
         </div>
         <div class="event-description">${ev.description || ''}</div>
+        <button class="joinEventBtn" data-event-id="${ev.id}">Join Event</button>
       `;
       eventsEl.appendChild(div);
     });
@@ -88,17 +94,22 @@ async function renderEvents(searchTerm = ''){
   }
 }
 
+// Initial render
 document.getElementById('searchEventsForm').addEventListener('submit', async (e)=>{
   e.preventDefault();
   const searchTerm = document.getElementById('eventSearch').value.trim();
   await renderEvents(searchTerm);
 });
 
+
+// Fetch all events button
 document.getElementById('fetchAllEvents').addEventListener('click', async ()=>{
   document.getElementById('eventSearch').value = '';
   await renderEvents();
 });
 
+
+// Create event form
 document.getElementById('createEventForm').addEventListener('submit', async (e)=>{
   e.preventDefault();
   const title = document.getElementById('eventName').value;
@@ -110,31 +121,29 @@ document.getElementById('createEventForm').addEventListener('submit', async (e)=
     alert('You must be logged in to create an event');
     return;
   }
-  else{
-    try{
-      const res = await fetch('/api/events', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({ title, description, date, location })
-      });
-      if(res.ok){
-        alert('Event created successfully');
-        document.getElementById('createEventForm').reset();
-      }
-      if(!res.ok){
-        const err = await res.json().catch(()=>({message:'Unknown error'}));
-        throw new Error(err.message || 'Failed to create event');
-      }
+  try{
+    const res = await fetch('/api/events', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify({ title, description, date, location })
+    });
+    if(res.ok){
+      alert('Event created successfully');
+      document.getElementById('createEventForm').reset();
+    } else {
+      const err = await res.json().catch(()=>({message:'Unknown error'}));
+      throw new Error(err.message || 'Failed to create event');
     }
-    catch(err){
-      alert(err.message);
-    }
+  }
+  catch(err){
+    alert(err.message);
   }
 });
 
+// Delete event form
 document.getElementById('deleteEventBtn').addEventListener('click', async (e)=>{
   e.preventDefault();
   const eventId = document.getElementById('deleteEventId').value;
@@ -153,8 +162,7 @@ document.getElementById('deleteEventBtn').addEventListener('click', async (e)=>{
     if(res.ok){
       alert('Event deleted successfully');
       document.getElementById('deleteEventId').value = '';
-    }
-    if(!res.ok){
+    } else {
       const err = await res.json().catch(()=>({message:'Unknown error'}));
       throw new Error(err.message || 'Failed to delete event');
     }
@@ -164,6 +172,7 @@ document.getElementById('deleteEventBtn').addEventListener('click', async (e)=>{
   }
 });
 
+// Logout button
 document.getElementById('logoutBtn').addEventListener('click', ()=>{
   localStorage.removeItem('token');
   setUserInfo(null);
