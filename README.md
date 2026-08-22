@@ -6,6 +6,7 @@ A REST API for managing game nights and other events, built with Node.js, Expres
 - CRUD endpoints
 - Event planning and organization
 - SQLite database and Sequelize ORM
+- Front end built with HTML and CSS
 
 ## API Endpoints
 

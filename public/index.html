@@ -27,7 +27,11 @@
 
   <section>
     <h2>Events</h2>
-    <button id="fetchEvents">Load Events</button>
+    <form id="searchEventsForm">
+      <input id="eventSearch" type="search" placeholder="Search by title, description, or location" />
+      <button id="fetchEvents" type="submit">Search Events</button>
+      <button id="fetchAllEvents" type="button">Show All Events</button>
+    </form>
     <div id="events"></div>
   </section>
 

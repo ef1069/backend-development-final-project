@@ -16,6 +16,29 @@ header{
 button{
     margin-left:.5rem
 }
+
+#searchEventsForm{
+    display:flex;
+    gap:.5rem;
+    width:100%;
+}
+
+#eventSearch{
+    flex:1;
+    min-width:0;
+    font-size: inherit;
+}
+
+#searchEventsForm button{
+    margin-left:0;
+}
+
+@media (max-width:600px){
+    #searchEventsForm{
+        flex-direction:column;
+    }
+}
+
 #events{
     margin-top:1rem;
     display:grid;

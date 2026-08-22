@@ -33,9 +33,10 @@ async function login(email, password){
   return res.json();
 }
 
-async function fetchEvents(){
+async function searchEvents(searchTerm = ''){
   const token = getToken();
-  const res = await fetch('/api/events', {
+  const query = searchTerm ? `?q=${encodeURIComponent(searchTerm)}` : '';
+  const res = await fetch(`/api/events${query}`, {
     headers: token ? { 'Authorization': `Bearer ${token}` } : {}
   });
   if(!res.ok){
@@ -59,12 +60,16 @@ document.getElementById('loginForm').addEventListener('submit', async (e)=>{
   }
 });
 
-document.getElementById('fetchEvents').addEventListener('click', async ()=>{
+async function renderEvents(searchTerm = ''){
   const eventsEl = document.getElementById('events');
   eventsEl.innerHTML = 'Loading...';
   try{
-    const data = await fetchEvents();
+    const data = await searchEvents(searchTerm);
     eventsEl.innerHTML = '';
+    if(!data.events || data.events.length === 0){
+      eventsEl.textContent = 'No events found.';
+      return;
+    }
     (data.events || []).forEach(ev=>{
       const div = document.createElement('div');
       div.className = 'card event-card';
@@ -81,6 +86,17 @@ document.getElementById('fetchEvents').addEventListener('click', async ()=>{
   }catch(err){
     eventsEl.innerHTML = `<div style="color:red">${err.message}</div>`;
   }
+}
+
+document.getElementById('searchEventsForm').addEventListener('submit', async (e)=>{
+  e.preventDefault();
+  const searchTerm = document.getElementById('eventSearch').value.trim();
+  await renderEvents(searchTerm);
+});
+
+document.getElementById('fetchAllEvents').addEventListener('click', async ()=>{
+  document.getElementById('eventSearch').value = '';
+  await renderEvents();
 });
 
 document.getElementById('createEventForm').addEventListener('submit', async (e)=>{

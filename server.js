@@ -1,4 +1,5 @@
 const express = require('express');
+const { Op } = require('sequelize');
 const path = require('path');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
@@ -214,7 +215,15 @@ app.post('/api/logout', requireAuth, (req, res) => {
 // GET /api/events - Get all events
 app.get('/api/events', requireAuth, async (req, res) => {
     try {
-        const events = await Event.findAll();
+        const searchTerm = typeof req.query.q === 'string' ? req.query.q.trim() : '';
+        const where = searchTerm ? {
+            [Op.or]: [
+                { title: { [Op.like]: `%${searchTerm}%` } },
+                { description: { [Op.like]: `%${searchTerm}%` } },
+                { location: { [Op.like]: `%${searchTerm}%` } }
+            ]
+        } : undefined;
+        const events = await Event.findAll({ where, order: [['date', 'ASC']] });
         res.json({
             message: 'Events retrieved successfully',
             events: events,
